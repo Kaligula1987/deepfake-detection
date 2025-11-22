@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import hashlib
 import stripe
 import json
+from pathlib import Path
 
 app = FastAPI(
     title="Deepfake Detection API",
@@ -30,8 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static files - FIXED PATH
-app.mount("/static", StaticFiles(directory="../web/static"), name="static")
+# Static Files - KORRIGIERTER PFAD
+app.mount("/static", StaticFiles(directory="web/static"), name="static")
 
 # Database setup
 def init_db():
@@ -203,15 +204,15 @@ async def startup_event():
 # ===== ROUTES =====
 @app.get("/")
 async def serve_frontend():
-    return FileResponse("../web/index.html")
+    return FileResponse("web/index.html")
 
 @app.get("/premium")
 async def premium_page():
-    return FileResponse("../web/premium.html")
+    return FileResponse("web/premium.html")
 
 @app.get("/payment-success")
 async def payment_success():
-    return FileResponse("../web/payment_success.html")
+    return FileResponse("web/payment_success.html")
 
 @app.get("/api/user/status")
 async def get_user_status(request: Request):
@@ -242,7 +243,7 @@ async def predict(request: Request, file: UploadFile = File(...)):
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes))
         
-        # Simple analysis (replace with your actual detection)
+        # Simple analysis
         result = {
             "faces_detected": 1,
             "ai_score": 0.15,
@@ -261,7 +262,7 @@ async def predict(request: Request, file: UploadFile = File(...)):
         "request_id": str(uuid.uuid4())[:8],
         "user_type": scan_status["user_type"],
         "result": result,
-        "scans_used_today": scan_status.get("scans_used", 0) + 1
+        "scans_used_today": 1
     })
 
 @app.post("/create-checkout-session")
@@ -278,14 +279,14 @@ async def create_checkout_session(request: Request):
                         'name': 'Deepfake Detection Premium',
                         'description': 'Unlimited scans for 1 month',
                     },
-                    'unit_amount': 999,  # €9.99
+                    'unit_amount': 999,
                     'recurring': {'interval': 'month'},
                 },
                 'quantity': 1,
             }],
             mode='subscription',
-            success_url='https://your-domain.com/payment-success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='https://your-domain.com/premium',
+            success_url='http://localhost:8000/payment-success',
+            cancel_url='http://localhost:8000/premium',
             client_reference_id=user_id,
         )
         
@@ -296,31 +297,17 @@ async def create_checkout_session(request: Request):
 
 @app.post("/stripe-webhook")
 async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
-    payload = await request.body()
-    
-    try:
-        event = stripe.Event.construct_from(json.loads(payload), stripe.api_key)
-    except:
-        raise HTTPException(status_code=400, detail="Invalid payload")
-    
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        user_id = session.get('client_reference_id')
-        if user_id:
-            background_tasks.add_task(upgrade_user, user_id, 1)
-    
     return {"status": "success"}
 
-# Test routes
 @app.post("/admin/enable-test-mode")
 async def enable_test_mode(request: Request):
     user_id = get_user_id(request)
     upgrade_user(user_id, 12)
-    return {"message": "Test mode enabled - unlimited scans!"}
+    return {"message": "Test mode enabled!"}
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
