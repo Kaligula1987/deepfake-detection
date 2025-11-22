@@ -1,4 +1,4 @@
-# app/fallback_detector.py
+# app/fallback.py
 import io
 from PIL import Image
 import numpy as np
@@ -13,7 +13,7 @@ def analyze_image_bytes(image_bytes):
         # Convert to numpy for basic analysis
         img_array = np.array(image)
         
-        # Basic image analysis (placeholder)
+        # Basic image analysis
         brightness = np.mean(img_array)
         contrast = np.std(img_array)
         
