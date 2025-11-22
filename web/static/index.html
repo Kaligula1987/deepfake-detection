@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detection - Image Authenticity Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Deepfake Detection</h1>
+            <p class="subtitle">AI-powered image authenticity analyzer</p>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon">📁</div>
+                    <h3>Upload Image to Analyze</h3>
+                    <p>Supports JPG, PNG, WebP (max 10MB)</p>
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        Choose Image
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h3>Image Preview</h3>
+                <div class="preview-container">
+                    <img id="preview" alt="Preview">
+                </div>
+                <button class="analyze-btn" onclick="analyzeImage()">Analyze Image</button>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3>Analysis Results</h3>
+                <div class="results-container">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="result-label" id="finalLabel">Loading...</span>
+                            <span class="confidence" id="confidence">0%</span>
+                        </div>
+                        
+                        <div class="score-breakdown">
+                            <div class="score-item">
+                                <label>AI Generation Score:</label>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="aiScoreBar"></div>
+                                    <span class="score-value" id="aiScore">0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="score-item">
+                                <label>Manipulation Score:</label>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="manipScoreBar"></div>
+                                    <span class="score-value" id="manipScore">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="faces-section" id="facesSection">
+                            <h4>Face Analysis</h4>
+                            <div id="facesList"></div>
+                        </div>
+
+                        <div class="metadata">
+                            <div class="meta-item">
+                                <strong>Request ID:</strong> <span id="requestId">-</span>
+                            </div>
+                            <div class="meta-item">
+                                <strong>Faces Detected:</strong> <span id="facesCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="new-analysis-btn" onclick="resetAnalysis()">Analyze Another Image</button>
+            </div>
+
+            <div class="loading-section" id="loadingSection" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Analyzing image for authenticity...</p>
+                <p class="loading-sub">This may take a few seconds</p>
+            </div>
+
+            <div class="error-section" id="errorSection" style="display: none;">
+                <div class="error-message">
+                    <div class="error-icon">⚠️</div>
+                    <h4>Analysis Failed</h4>
+                    <p id="errorText">An error occurred during analysis</p>
+                    <button class="retry-btn" onclick="resetAnalysis()">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Deepfake Detection. Powered by AI.</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
