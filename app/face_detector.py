@@ -3,19 +3,6 @@ import cv2
 import numpy as np
 import os
 
-# Try to use ultralytics YOLOv8-face if available, otherwise Haarcascade
-USE_YOLO = False
-try:
-    from ultralytics import YOLO
-    if os.path.exists("yolov8n-face.pt"):
-        yolom = YOLO("yolov8n-face.pt")
-        USE_YOLO = True
-        print("Using YOLO face detection")
-    else:
-        print("YOLO model not found, using Haar cascade")
-except Exception as e:
-    print(f"YOLO not available: {e}, using Haar cascade")
-
 # Load Haar cascade
 haar = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
@@ -23,18 +10,6 @@ def detect_faces_bboxes(img):
     """
     Returns list of boxes [(x1,y1,x2,y2), ...] and the original BGR image
     """
-    if USE_YOLO:
-        try:
-            res = yolom(img, verbose=False)[0]
-            boxes = []
-            for box in res.boxes.xyxy:
-                x1, y1, x2, y2 = map(int, box)
-                boxes.append((x1, y1, x2, y2))
-            return boxes, img
-        except Exception as e:
-            print(f"YOLO detection failed: {e}, falling back to Haar")
-
-    # Haarcascade fallback
     try:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = haar.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
@@ -43,7 +18,7 @@ def detect_faces_bboxes(img):
             boxes.append((int(x), int(y), int(x+w), int(y+h)))
         return boxes, img
     except Exception as e:
-        print(f"Haar cascade detection failed: {e}")
+        print(f"Face detection failed: {e}")
         return [], img
 
 def read_image_bgr(path_or_bytes):
@@ -63,8 +38,8 @@ def read_image_bgr(path_or_bytes):
             print(f"Failed to read image file: {e}")
             return None
 
-# Keep your existing function for compatibility
 def extract_face(image_path, size=(160,160)):
+    """Extract face from image path"""
     img = cv2.imread(image_path)
     if img is None:
         raise ValueError("Could not read image")
