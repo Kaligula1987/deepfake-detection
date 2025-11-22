@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - Deepfake Detection</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .pricing-section {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            border: 3px solid #ddd;
+        }
+        
+        .pricing-card.premium {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.premium h3 {
+            color: white;
+        }
+        
+        .price {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .pricing-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .pricing-card li {
+            padding: 8px 0;
+            font-size: 1.1em;
+        }
+        
+        .premium-btn {
+            background: #ffd700;
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .premium-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .current-usage {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .payment-security {
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .payment-security img {
+            height: 30px;
+            margin: 0 10px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Upgrade to Premium</h1>
+            <p class="subtitle">Unlock unlimited deepfake detection power</p>
+        </header>
+
+        <div class="current-usage">
+            <h3>Your Current Usage</h3>
+            <p id="usageInfo">Loading your usage information...</p>
+        </div>
+        
+        <div class="pricing-section">
+            <div class="pricing-card">
+                <h3>Free</h3>
+                <div class="price">€0</div>
+                <ul>
+                    <li>✅ 1 scan per day</li>
+                    <li>✅ Basic analysis results</li>
+                    <li>❌ Standard processing queue</li>
+                    <li>❌ No priority support</li>
+                    <li>❌ Limited to images only</li>
+                </ul>
+                <button class="upload-btn" onclick="window.location.href='/'">Continue Free</button>
+            </div>
+            
+            <div class="pricing-card premium">
+                <div style="background: #ffd700; color: #333; padding: 5px 15px; border-radius: 15px; display: inline-block; margin-bottom: 15px; font-weight: bold;">
+                    MOST POPULAR
+                </div>
+                <h3>Premium</h3>
+                <div class="price">€5/month</div>
+                <ul>
+                    <li>✅ Unlimited daily scans</li>
+                    <li>✅ Priority processing</li>
+                    <li>✅ Detailed analysis reports</li>
+                    <li>✅ Priority email support</li>
+                    <li>✅ Future video analysis access</li>
+                    <li>✅ API access included</li>
+                </ul>
+                <button class="premium-btn" onclick="buyPremium()">💳 Upgrade Now - €5/month</button>
+            </div>
+        </div>
+
+        <div class="payment-security">
+            <p>🔒 Secure payments processed by <strong>Stripe</strong></p>
+            <div>
+                <img src="https://stripe.com/img/v3/home/twitter.png" alt="Visa" style="height: 20px;">
+                <img src="https://stripe.com/img/v3/home/twitter.png" alt="Mastercard" style="height: 20px;">
+                <img src="https://stripe.com/img/v3/home/twitter.png" alt="Amex" style="height: 20px;">
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="upload-btn" onclick="window.location.href='/'">← Back to Scanner</button>
+        </div>
+    </div>
+
+    <script>
+        // Load user usage info
+        async function loadUserStatus() {
+            try {
+                const response = await fetch('/api/user/status');
+                const data = await response.json();
+                
+                const usageInfo = document.getElementById('usageInfo');
+                if (data.scan_status.user_type === 'premium') {
+                    usageInfo.innerHTML = `
+                        <strong style="color: #ffd700;">⭐ Premium Member</strong><br>
+                        Unlimited scans available<br>
+                        Your premium expires: ${data.scan_status.premium_expires}
+                    `;
+                } else {
+                    usageInfo.innerHTML = `
+                        <strong>Free User</strong><br>
+                        Scans used today: ${data.scan_status.scans_used || 0}/1<br>
+                        Scans remaining today: ${data.scan_status.scans_left || 0}
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading user status:', error);
+            }
+        }
+        
+        async function buyPremium() {
+            try {
+                const button = event.target;
+                button.innerHTML = '🔄 Processing...';
+                button.disabled = true;
+                
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.checkout_url) {
+                    // Redirect to Stripe checkout
+                    window.location.href = data.checkout_url;
+                } else {
+                    throw new Error('No checkout URL received');
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment setup failed. Please try again.');
+                event.target.innerHTML = '💳 Upgrade Now - €5/month';
+                event.target.disabled = false;
+            }
+        }
+        
+        // Load user status when page loads
+        loadUserStatus();
+    </script>
+</body>
+</html>
