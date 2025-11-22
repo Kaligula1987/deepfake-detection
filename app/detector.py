@@ -1,67 +1,21 @@
-# app/detector.py - UPDATE THE PREDICT FUNCTION
+# app/detector.py
 import os
 import io
 from PIL import Image
 import numpy as np
 import cv2
-import tensorflow as tf
-
-from app.utils import compute_ela_score, variance_of_laplacian_cv2, image_entropy, extract_exif
-from app.face_detector import detect_faces_bboxes, read_image_bgr
-
-# Load your trained deepfake model
-DEEPFAKE_MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "model", "deepfake_model.h5")
-deepfake_model = None
 
 try:
-    if os.path.exists(DEEPFAKE_MODEL_PATH):
-        print("Loading deepfake model...")
-        deepfake_model = tf.keras.models.load_model(DEEPFAKE_MODEL_PATH)
-        print("Deepfake model loaded successfully!")
-        
-        # Print model summary to debug input shape
-        print("Model input shape:", deepfake_model.input_shape)
-        print("Model output shape:", deepfake_model.output_shape)
-        
-    else:
-        print(f"Model file not found at: {DEEPFAKE_MODEL_PATH}")
-except Exception as e:
-    print(f"Warning: Failed to load deepfake model: {e}")
-    deepfake_model = None
+    from .utils import compute_ela_score, variance_of_laplacian_cv2, image_entropy, extract_exif
+    from .face_detector import detect_faces_bboxes, read_image_bgr
+except ImportError:
+    from utils import compute_ela_score, variance_of_laplacian_cv2, image_entropy, extract_exif
+    from face_detector import detect_faces_bboxes, read_image_bgr
 
 def predict_deepfake_on_face(face_bgr):
-    """Predict if a face is deepfake using your trained model"""
-    if deepfake_model is None:
-        return None
-    try:
-        # Convert BGR to RGB
-        face_rgb = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2RGB)
-        
-        # Try different sizes to match your model
-        target_size = (128, 128)  # Common size for face models
-        try:
-            face_resized = cv2.resize(face_rgb, target_size).astype("float32") / 255.0
-            x = np.expand_dims(face_resized, axis=0)
-            
-            # Predict
-            prediction = deepfake_model.predict(x, verbose=0)
-            
-            # Handle different model output formats
-            if len(prediction[0]) == 1:
-                # Binary classification
-                fake_score = float(prediction[0][0])
-            else:
-                # Multi-class: assume [real_prob, fake_prob]
-                fake_score = float(prediction[0][1])
-            
-            return fake_score
-        except Exception as size_error:
-            print(f"Size {target_size} failed: {size_error}")
-            return None
-            
-    except Exception as e:
-        print(f"Deepfake prediction failed: {e}")
-        return None
+    """Predict if a face is deepfake"""
+    # Placeholder for your model - returns None for now
+    return None
 
 def ai_generated_score(pil_img):
     """Heuristic AI-generated image detection"""
